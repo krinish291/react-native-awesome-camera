@@ -143,8 +143,8 @@ const AwesomeCamera = () => {
         isActive={true}
         video={true}
         audio={true}
+        focusable={true}
         enableZoomGesture={true}
-        preset={"low"}
       />
       <View style={bottomOuter}>
         <FlatList
