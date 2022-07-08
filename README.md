@@ -11,11 +11,10 @@
 - Customize theme color
 
 <br>
-
 <p align="center">
-  <img alt="Image Capture" src="assets/image.jpg" width="45%">
+  <img alt="Image Capture" src="https://iili.io/jrQlqv.jpg" width="45%">
 &nbsp; &nbsp; &nbsp; &nbsp;
-  <img alt="Video Capture" src="assets/video.jpg" width="45%">
+  <img alt="Video Capture" src="https://iili.io/jrQaLJ.jpg" width="45%">
 </p>
 
 <br>
