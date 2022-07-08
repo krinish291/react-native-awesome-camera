@@ -1,14 +1,14 @@
 {
   "name": "react-native-awesome-camera",
   "version": "1.0.5",
-  "description": "",
+  "description": "A React Native package that allows you to select a photo/video from the device library or camera.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "license": "MIT",
   "dependencies": {
     "@react-native-community/cameraroll": "github:BohdanSol/react-native-cameraroll.git",
-    "fbjs": "^3.0.4",
     "react": "^18.0.0",
     "react-native": "^0.69.1",
     "react-native-permissions": "^3.3.1",
@@ -19,9 +19,11 @@
     "react-native": "^0.69.1"
   },
   "author": "radadiyakrinish1999@gmail.com",
-  "license": "ISC",
   "devDependencies": {
     "@types/react-native": "^0.69.1",
     "typescript": "^4.7.4"
-  }
+  },
+  "keywords": ["react-native","ios", "android", "camera","cameraroll","photo gallery","vision", "react-native-camera", "photo","video","typescript","react-native-permissions","native",
+  "image",
+  "picker"]
 }
