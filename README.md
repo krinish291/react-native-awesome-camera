@@ -1,3 +1,24 @@
+# React Native Awesome Camera
+
+## Features List
+
+<hr>
+
+- High quality camera support in Android and iOS
+- Select multiple images and videos from phone storage
+- Capture images and videos using awesome camera
+- Flash and camera zoom feature also available
+- Customize theme color
+
+<br>
+
+<p align="center">
+  <img alt="Image Capture" src="assets/image.jpg" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="Video Capture" src="assets/video.jpg" width="45%">
+</p>
+
+<br>
 ### Installation and Setup steps
 
 <hr>
