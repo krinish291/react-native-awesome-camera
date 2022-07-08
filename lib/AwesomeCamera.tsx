@@ -31,45 +31,66 @@ const AwesomeCamera = () => {
     bottomOuter,
     videoStyle,
     imageStyle,
-    selectedImageStyleOuter,
-    selectedImageStyle,
     bottomInner,
-    count,
+    bottomText,
+    flashTextStyle,
+    fontSize,
+    flashStyle,
+    checkButtonStyle,
+    isVideoStyle,
+    flexDirection,
+    borderWidth,
+    centerStyle,
   } = styles;
   const [video, setVideo] = useState<boolean>(false);
+  const [isTorch, setIsTorch] = useState<boolean>(false);
+  const [hasStoragePermission, setHasStoragePermission] =
+    useState<boolean>(false);
+  const [hasCameraPermission, setHasCameraPermission] =
+    useState<boolean>(false);
   const [photos, setPhotos] = useState<PhotoIdentifiersPage>();
   const [selectedImage, setSelectedImage] = useState<PhotoIdentifier[]>([]);
   // eslint-disable-next-line no-spaced-func
   const [media, setMedia] = useState<(PhotoFile | VideoFile)[]>([]);
-  const devices = useCameraDevices();
+  const devices: any = useCameraDevices();
   const camera = useRef<Camera>(null);
-
-  let device = devices.back;
+  const [frontCamera, setIsFrontCamera] = useState(false);
 
   useEffect(() => {
     managePermissions();
-    getPhotosDetails();
   }, []);
+
+  useEffect(() => {
+    if (hasStoragePermission) {
+      getPhotosDetails();
+    }
+  }, [hasStoragePermission]);
 
   const getPhotosDetails = async () => {
     const items = await CameraRoll.getPhotos({
       first: 20,
-      assetType: "Photos",
+      assetType: "All",
     });
     setPhotos(items);
   };
 
   const managePermissions = async () => {
     try {
-      await getCameraPermission();
-      await getStorageOrLibraryPermission();
+      const isCameraPermission = await getCameraPermission();
+      if (isCameraPermission) {
+        setHasCameraPermission(true);
+      }
+      const isStoragePermission = await getStorageOrLibraryPermission();
+      if (isStoragePermission) {
+        setHasStoragePermission(true);
+      }
+      console.log({ isStoragePermission });
+
       const microphonePermission = await Camera.getMicrophonePermissionStatus();
       if (microphonePermission === "denied") {
         await Camera.requestMicrophonePermission();
       }
-    } catch (error: any) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
 
   const getMorePhotos = async () => {
@@ -77,7 +98,7 @@ const AwesomeCamera = () => {
       if (photos?.page_info.has_next_page) {
         const items = await CameraRoll.getPhotos({
           first: 20,
-          assetType: "Photos",
+          assetType: "All",
           after: photos?.page_info.end_cursor,
         });
         setPhotos({
@@ -85,9 +106,7 @@ const AwesomeCamera = () => {
           page_info: items.page_info,
         });
       }
-    } catch (error: any) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
 
   const takePicture = async () => {
@@ -98,10 +117,10 @@ const AwesomeCamera = () => {
           skipMetadata: true,
         });
         snapshot.path = `file:///${snapshot.path}`;
-        setMedia([...media, snapshot]);
+        setMedia([snapshot, ...media]);
       }
-    } catch (error: any) {
-      console.log(error);
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -112,9 +131,9 @@ const AwesomeCamera = () => {
         camera.current.startRecording({
           flash: "off",
           onRecordingFinished: (v: VideoFile) => {
-            setMedia([...media, v]);
+            setMedia([v, ...media]);
           },
-          onRecordingError: (error: any) => console.error(error),
+          onRecordingError: (error) => console.error(error),
         });
       }
     } catch (e) {
@@ -124,14 +143,87 @@ const AwesomeCamera = () => {
 
   const stopRecording = async () => {
     setVideo(false);
-    if (camera.current) {
+    if (camera.current && video) {
       await camera.current.stopRecording();
     }
   };
 
-  if (device == null) {
-    return <ActivityIndicator />;
+  if (
+    (frontCamera && devices.front == null) ||
+    (!frontCamera && devices.back == null) ||
+    !hasCameraPermission
+  ) {
+    return (
+      <View style={centerStyle}>
+        <ActivityIndicator size={"large"} />
+      </View>
+    );
   }
+
+  const renderHeader = () => {
+    return (
+      <View style={flexDirection}>
+        {(media.length &&
+          media.map((obj: any, index: number) => {
+            return (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  media.splice(index!, 1);
+                  setMedia([...media]);
+                }}
+              >
+                <Image
+                  onError={(e) => {
+                    console.log(e);
+                  }}
+                  source={{
+                    uri: `${obj.path}`,
+                  }}
+                  style={[imageStyle, borderWidth]}
+                />
+                {(obj?.duration && <Text style={isVideoStyle}>{"▶️"}</Text>) ||
+                  null}
+              </Pressable>
+            );
+          })) ||
+          null}
+      </View>
+    );
+  };
+
+  interface MediaProps {
+    index?: number;
+    item: PhotoIdentifier;
+  }
+
+  const Media = (props: MediaProps) => {
+    const { item, index } = props;
+    const isVideo = item.node.type.split("/")?.[0] === "video";
+    return (
+      <Pressable
+        onPress={() => {
+          if (index! >= 0) {
+            selectedImage.splice(index!, 1);
+            setSelectedImage([...selectedImage]);
+          } else {
+            setSelectedImage([...selectedImage, item]);
+          }
+        }}
+      >
+        <Image
+          source={{ uri: item.node.image.uri }}
+          style={[
+            imageStyle,
+            {
+              borderWidth: (index! >= 0 && 1) || 0,
+            },
+          ]}
+        />
+        {(isVideo && <Text style={isVideoStyle}>{"▶️"}</Text>) || null}
+      </Pressable>
+    );
+  };
 
   return (
     <SafeAreaView style={container}>
@@ -139,11 +231,13 @@ const AwesomeCamera = () => {
         ref={camera}
         onError={(error) => console.log(error)}
         style={StyleSheet.absoluteFill}
-        device={device}
+        device={frontCamera ? devices.front : devices.back}
         isActive={true}
         video={true}
-        audio={true}
         focusable={true}
+        audio={true}
+        zoom={1}
+        torch={isTorch ? "on" : "off"}
         enableZoomGesture={true}
       />
       <View style={bottomOuter}>
@@ -151,38 +245,35 @@ const AwesomeCamera = () => {
           showsHorizontalScrollIndicator={false}
           data={photos?.edges}
           horizontal={true}
+          ListHeaderComponent={renderHeader}
           renderItem={({ item }: { item: PhotoIdentifier }) => {
             const index = selectedImage.findIndex(
-              (data: any) => data.node.image.uri === item.node.image.uri
+              (data) => data.node.image.uri === item.node.image.uri
             );
-            return (
-              <Pressable
-                onPress={() => {
-                  if (index >= 0) {
-                    selectedImage.splice(index, 1);
-                    setSelectedImage([...selectedImage]);
-                  } else {
-                    setSelectedImage([...selectedImage, item]);
-                  }
-                }}
-              >
-                <Image
-                  source={{ uri: item.node.image.uri }}
-                  style={[
-                    imageStyle,
-                    {
-                      borderWidth: (index >= 0 && 1) || 0,
-                    },
-                  ]}
-                />
-              </Pressable>
-            );
+            return <Media index={index} item={item} />;
           }}
-          keyExtractor={(item: any) => item.node.image.uri}
+          keyExtractor={(item) => item.node.image.uri}
           onEndReached={getMorePhotos}
         />
+        {((media.length || selectedImage.length) && (
+          <Pressable style={checkButtonStyle}>
+            <Text>{`${media.length + selectedImage.length} ✔️`}</Text>
+          </Pressable>
+        )) ||
+          null}
         <View style={bottomInner}>
-          <Text style={count}>{media.length + selectedImage.length}</Text>
+          <Pressable
+            onPress={() => {
+              setIsTorch(!isTorch);
+            }}
+            disabled={frontCamera}
+            style={[
+              flashStyle,
+              { backgroundColor: (isTorch && "white") || "transparent" },
+            ]}
+          >
+            <Text style={[flashTextStyle, fontSize]}>{"⚡"}</Text>
+          </Pressable>
           <Pressable
             onPress={takePicture}
             style={photoButton}
@@ -194,21 +285,16 @@ const AwesomeCamera = () => {
           >
             <View style={(video && videoStyle) || {}} />
           </Pressable>
-          <View style={selectedImageStyleOuter}>
-            {(media.length && (
-              <Image
-                onError={(e: any) => {
-                  console.log(e);
-                }}
-                source={{
-                  uri: `${media[media?.length - 1]?.path}`,
-                }}
-                style={selectedImageStyle}
-              />
-            )) ||
-              null}
-          </View>
+          <Pressable
+            onPress={() => {
+              setIsFrontCamera(!frontCamera);
+              setIsTorch(false);
+            }}
+          >
+            <Text style={fontSize}>{"🔄"}</Text>
+          </Pressable>
         </View>
+        <Text style={bottomText}>{"Hold for video,tap for photo "}</Text>
       </View>
     </SafeAreaView>
   );
@@ -240,31 +326,61 @@ const styles = StyleSheet.create({
   },
   bottomOuter: {
     position: "absolute",
-    bottom: 30,
+    width: "100%",
+    bottom: 10,
   },
   imageStyle: {
-    height: 100,
-    width: 100,
-    margin: 10,
+    height: 80,
+    width: 80,
+    margin: 2,
     borderColor: "yellow",
   },
-  count: {
-    color: "#fff",
-    flex: 1,
-    textAlign: "center",
-  },
   bottomInner: {
-    flex: 3,
+    flex: 1,
+    marginBottom: 7,
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
   },
-  selectedImageStyle: {
-    width: 80,
-    height: 80,
+  bottomText: {
+    textAlign: "center",
+    color: "#fff",
   },
-  selectedImageStyleOuter: {
+  flashTextStyle: {
+    textAlign: "center",
+  },
+  fontSize: {
+    fontSize: 25,
+  },
+  flashStyle: {
+    borderColor: "white",
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  checkButtonStyle: {
+    width: 50,
+    height: 50,
+    backgroundColor: "yellow",
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    right: 20,
+    top: -20,
+  },
+  isVideoStyle: {
+    position: "absolute",
+    alignSelf: "center",
+    top: 20,
+    fontSize: 25,
+  },
+  flexDirection: { flexDirection: "row" },
+  borderWidth: { borderWidth: 1 },
+  centerStyle: {
     flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
 });
