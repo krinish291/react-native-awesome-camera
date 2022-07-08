@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   View,
   FlatList,
@@ -24,9 +23,16 @@ import {
   getStorageOrLibraryPermission,
 } from "./Permissions";
 
-const AwesomeCamera = () => {
+interface AwesomeCameraProps {
+  setIsOpen: Function;
+  getData: Function;
+  zoom?: number;
+  themeColor?: string;
+}
+
+const AwesomeCamera = (props: AwesomeCameraProps) => {
+  const { setIsOpen, getData, zoom, themeColor = "yellow" } = props;
   const {
-    container,
     photoButton,
     bottomOuter,
     videoStyle,
@@ -41,6 +47,7 @@ const AwesomeCamera = () => {
     flexDirection,
     borderWidth,
     centerStyle,
+    closeButtonStyle,
   } = styles;
   const [video, setVideo] = useState<boolean>(false);
   const [isTorch, setIsTorch] = useState<boolean>(false);
@@ -84,13 +91,13 @@ const AwesomeCamera = () => {
       if (isStoragePermission) {
         setHasStoragePermission(true);
       }
-      console.log({ isStoragePermission });
-
       const microphonePermission = await Camera.getMicrophonePermissionStatus();
       if (microphonePermission === "denied") {
         await Camera.requestMicrophonePermission();
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const getMorePhotos = async () => {
@@ -141,6 +148,12 @@ const AwesomeCamera = () => {
     }
   };
 
+  const checkOut = () => {
+    const data = [...media, ...selectedImage];
+    getData(data);
+    setIsOpen(false);
+  };
+
   const stopRecording = async () => {
     setVideo(false);
     if (camera.current && video) {
@@ -180,7 +193,7 @@ const AwesomeCamera = () => {
                   source={{
                     uri: `${obj.path}`,
                   }}
-                  style={[imageStyle, borderWidth]}
+                  style={[imageStyle, borderWidth, { borderColor: themeColor }]}
                 />
                 {(obj?.duration && <Text style={isVideoStyle}>{"▶️"}</Text>) ||
                   null}
@@ -197,8 +210,8 @@ const AwesomeCamera = () => {
     item: PhotoIdentifier;
   }
 
-  const Media = (props: MediaProps) => {
-    const { item, index } = props;
+  const Media = (MediaProps: MediaProps) => {
+    const { item, index } = MediaProps;
     const isVideo = item.node.type.split("/")?.[0] === "video";
     return (
       <Pressable
@@ -217,6 +230,7 @@ const AwesomeCamera = () => {
             imageStyle,
             {
               borderWidth: (index! >= 0 && 1) || 0,
+              borderColor: themeColor,
             },
           ]}
         />
@@ -226,7 +240,7 @@ const AwesomeCamera = () => {
   };
 
   return (
-    <SafeAreaView style={container}>
+    <>
       <Camera
         ref={camera}
         onError={(error) => console.log(error)}
@@ -236,10 +250,18 @@ const AwesomeCamera = () => {
         video={true}
         focusable={true}
         audio={true}
-        zoom={1}
+        zoom={zoom}
         torch={isTorch ? "on" : "off"}
         enableZoomGesture={true}
       />
+      <Pressable
+        style={closeButtonStyle}
+        onPress={() => {
+          setIsOpen(false);
+        }}
+      >
+        <Text style={fontSize}>{"❌"}</Text>
+      </Pressable>
       <View style={bottomOuter}>
         <FlatList
           showsHorizontalScrollIndicator={false}
@@ -256,7 +278,10 @@ const AwesomeCamera = () => {
           onEndReached={getMorePhotos}
         />
         {((media.length || selectedImage.length) && (
-          <Pressable style={checkButtonStyle}>
+          <Pressable
+            style={[checkButtonStyle, { backgroundColor: themeColor }]}
+            onPress={checkOut}
+          >
             <Text>{`${media.length + selectedImage.length} ✔️`}</Text>
           </Pressable>
         )) ||
@@ -278,9 +303,6 @@ const AwesomeCamera = () => {
             onPress={takePicture}
             style={photoButton}
             onLongPress={startRecording}
-            onPressIn={() => {
-              console.log("in");
-            }}
             onPressOut={stopRecording}
           >
             <View style={(video && videoStyle) || {}} />
@@ -296,16 +318,11 @@ const AwesomeCamera = () => {
         </View>
         <Text style={bottomText}>{"Hold for video,tap for photo "}</Text>
       </View>
-    </SafeAreaView>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   photoButton: {
     height: 80,
     width: 80,
@@ -333,7 +350,6 @@ const styles = StyleSheet.create({
     height: 80,
     width: 80,
     margin: 2,
-    borderColor: "yellow",
   },
   bottomInner: {
     flex: 1,
@@ -362,7 +378,6 @@ const styles = StyleSheet.create({
   checkButtonStyle: {
     width: 50,
     height: 50,
-    backgroundColor: "yellow",
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
@@ -382,6 +397,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  closeButtonStyle: {
+    top: 50,
+    position: "absolute",
+    left: 50,
   },
 });
 
