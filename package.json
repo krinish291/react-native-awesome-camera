@@ -7,16 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "MIT",
+  "typings": "dist/index.d.ts",
   "dependencies": {
     "@react-native-community/cameraroll": "github:BohdanSol/react-native-cameraroll.git",
-    "react": "*",
-    "react-native": "*",
     "react-native-permissions": "^3.3.1",
     "react-native-vision-camera": "^2.13.3"
-  },
-  "peerDependencies": {
-    "react": "*",
-    "react-native": "*"
   },
   "author": "radadiyakrinish1999@gmail.com",
   "devDependencies": {
