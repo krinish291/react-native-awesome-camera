@@ -15,8 +15,8 @@
     "react-native-vision-camera": "^2.13.3"
   },
   "peerDependencies": {
-    "react": ">=16.0.0",
-    "react-native": ">=0.64.0"
+    "react": "*",
+    "react-native": "*"
   },
   "author": "radadiyakrinish1999@gmail.com",
   "devDependencies": {
