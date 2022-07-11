@@ -40,7 +40,8 @@ install dependencies
 ```
 yarn add react-native-permissions
 yarn add react-native-vision-camera
-yarn add github:BohdanSol/react-native-cameraroll.git
+yarn add fbjs
+yarn add git+https://github.com/BohdanSol/react-native-cameraroll.git
 ```
 
 we are using **react-native-vision-camera**
@@ -113,13 +114,13 @@ you can refer this links for fixing [React-bridging wrong paths](https://github.
 ```javascript
 import React, { useState } from "react";
 import { Button, SafeAreaView, StyleSheet } from "react-native";
-import AdvanceCamera from "react-native-awesome-camera";
+import AwesomeCamera from "react-native-awesome-camera";
 
 const App = () => {
   const { container } = styles;
   const [isOpen, setIsOpen] = useState(false);
 
-  const getData = (data) => {
+  const getData = (data: any) => {
     console.log({ data });
   };
 
@@ -147,3 +148,23 @@ const styles = StyleSheet.create({
 
 export default App;
 ```
+
+### Run Command Android
+
+```
+yarn install && npm run android
+```
+
+### Run Command iOS
+
+```
+yarn install && cd ios && pod install && cd ..  && npm run ios
+```
+
+## Welcome to issues!
+
+- request for more features 🚀
+- fork and fix open issues 🛠
+- raise issue 📣
+
+[open issues](https://github.com/krinish291/react-native-awesome-camera/issues)

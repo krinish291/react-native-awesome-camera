@@ -1,11 +1,19 @@
 {
   "name": "react-native-awesome-camera",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A React Native package that allows you to select a photo/video from the device library or camera.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:krinish291/react-native-awesome-camera.git"
+  },  
+  "bugs": {
+    "url": "https://github.com/krinish291/react-native-awesome-camera/issues"
+  },
+  "homepage": "https://github.com/krinish291/react-native-awesome-camera#readme",
   "license": "MIT",
   "typings": "dist/index.d.ts",
   "dependencies": {
