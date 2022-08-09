@@ -58,6 +58,16 @@ export const getStorageOrLibraryPermission = async () => {
   return getBooleanForPermission(permission);
 };
 
+export const getMicrophonePermission = async () => {
+  let permission: PermissionStatus;
+  if (!isIOS) {
+    permission = await checkForPermission(PERMISSIONS.ANDROID.RECORD_AUDIO);
+  } else {
+    permission = await checkForPermission(PERMISSIONS.IOS.MICROPHONE);
+  }
+  return getBooleanForPermission(permission);
+};
+
 export const getCameraPermission = async () => {
   let permission: PermissionStatus;
   if (!isIOS) {

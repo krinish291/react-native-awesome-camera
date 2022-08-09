@@ -47,6 +47,16 @@ export const getStorageOrLibraryPermission = () => __awaiter(void 0, void 0, voi
     }
     return getBooleanForPermission(permission);
 });
+export const getMicrophonePermission = () => __awaiter(void 0, void 0, void 0, function* () {
+    let permission;
+    if (!isIOS) {
+        permission = yield checkForPermission(PERMISSIONS.ANDROID.RECORD_AUDIO);
+    }
+    else {
+        permission = yield checkForPermission(PERMISSIONS.IOS.MICROPHONE);
+    }
+    return getBooleanForPermission(permission);
+});
 export const getCameraPermission = () => __awaiter(void 0, void 0, void 0, function* () {
     let permission;
     if (!isIOS) {

@@ -7,10 +7,16 @@ import {
   FlatList,
   Text,
   Image,
+  GestureResponderEvent,
 } from "react-native";
 import {
   Camera,
+  CameraDevice,
+  CameraProps as VisionCameraProps,
   PhotoFile,
+  Point,
+  RecordVideoOptions as VisionRecordVideoOptions,
+  TakePhotoOptions as VisionTakePhotoOptions,
   useCameraDevices,
   VideoFile,
 } from "react-native-vision-camera";
@@ -20,18 +26,48 @@ import CameraRoll, {
 } from "@react-native-community/cameraroll";
 import {
   getCameraPermission,
+  getMicrophonePermission,
   getStorageOrLibraryPermission,
 } from "./Permissions";
+import { Media } from "./Media";
+
+const white = "white";
+const yellow = "yellow";
+const black = "black";
+
+interface CameraProps extends Omit<VisionCameraProps, "device" | "isActive"> {
+  device?: CameraDevice;
+  isActive?: boolean;
+}
+
+type RecordVideoOptions = Pick<VisionRecordVideoOptions, "flash">;
+
+type TakePhotoOptions = Omit<VisionTakePhotoOptions, "flash">;
 
 interface AwesomeCameraProps {
   setIsOpen: Function;
-  getData: Function;
-  zoom?: number;
+  getData: (
+    data: (CameraRoll.PhotoIdentifier | PhotoFile | VideoFile)[]
+  ) => void;
   themeColor?: string;
+  secondaryColor?: string;
+  cameraProps?: CameraProps;
+  multiSelect?: boolean;
+  takePhotoOptions?: TakePhotoOptions;
+  recordVideoOptions?: RecordVideoOptions;
 }
 
 const AwesomeCamera = (props: AwesomeCameraProps) => {
-  const { setIsOpen, getData, zoom, themeColor = "yellow" } = props;
+  const {
+    setIsOpen,
+    getData,
+    cameraProps,
+    themeColor = yellow,
+    secondaryColor = black,
+    multiSelect = true,
+    takePhotoOptions,
+    recordVideoOptions,
+  } = props;
   const {
     photoButton,
     bottomOuter,
@@ -48,20 +84,28 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
     borderWidth,
     centerStyle,
     closeButtonStyle,
+    focus,
   } = styles;
+
   const [video, setVideo] = useState<boolean>(false);
   const [isTorch, setIsTorch] = useState<boolean>(false);
   const [hasStoragePermission, setHasStoragePermission] =
     useState<boolean>(false);
   const [hasCameraPermission, setHasCameraPermission] =
     useState<boolean>(false);
+  const [hasMicrophonePermission, setHasMicrophonePermission] =
+    useState<boolean>(false);
   const [photos, setPhotos] = useState<PhotoIdentifiersPage>();
-  const [selectedImage, setSelectedImage] = useState<PhotoIdentifier[]>([]);
   // eslint-disable-next-line no-spaced-func
+  const [selectedImage, setSelectedImage] = useState<
+    (PhotoFile | VideoFile | PhotoIdentifier)[]
+  >([]);
   const [media, setMedia] = useState<(PhotoFile | VideoFile)[]>([]);
-  const devices: any = useCameraDevices();
-  const camera = useRef<Camera>(null);
+  const [focused, setFocused] = useState<Point>();
   const [frontCamera, setIsFrontCamera] = useState(false);
+
+  const devices = useCameraDevices();
+  const camera = useRef<Camera>(null);
 
   useEffect(() => {
     managePermissions();
@@ -84,17 +128,13 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
   const managePermissions = async () => {
     try {
       const isCameraPermission = await getCameraPermission();
-      if (isCameraPermission) {
-        setHasCameraPermission(true);
-      }
+      setHasCameraPermission(isCameraPermission);
+
       const isStoragePermission = await getStorageOrLibraryPermission();
-      if (isStoragePermission) {
-        setHasStoragePermission(true);
-      }
-      const microphonePermission = await Camera.getMicrophonePermissionStatus();
-      if (microphonePermission === "denied") {
-        await Camera.requestMicrophonePermission();
-      }
+      setHasStoragePermission(isStoragePermission);
+
+      const isMicPermission = await getMicrophonePermission();
+      setHasMicrophonePermission(isMicPermission);
     } catch (error) {
       console.log(error);
     }
@@ -119,12 +159,20 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
   const takePicture = async () => {
     try {
       if (camera.current) {
-        const snapshot = await camera?.current.takeSnapshot({
-          quality: 85,
+        const snapshot = await camera?.current.takePhoto({
           skipMetadata: true,
+          ...takePhotoOptions,
+          flash: (isTorch && "on") || "off",
         });
         snapshot.path = `file:///${snapshot.path}`;
-        setMedia([snapshot, ...media]);
+        const newMedia = [snapshot, ...media];
+        setMedia(newMedia);
+
+        if (!multiSelect) {
+          setSelectedImage([snapshot]);
+        } else {
+          setSelectedImage([...selectedImage, snapshot]);
+        }
       }
     } catch (e) {
       console.log(e);
@@ -133,12 +181,22 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
 
   const startRecording = () => {
     try {
+      if (!hasMicrophonePermission) {
+        throw new Error("No Microphone Permission Found.");
+      }
       setVideo(true);
       if (camera.current) {
         camera.current.startRecording({
-          flash: "off",
+          ...recordVideoOptions,
+          flash: (isTorch && "on") || "off",
           onRecordingFinished: (v: VideoFile) => {
-            setMedia([v, ...media]);
+            const newMedia = [v, ...media];
+            setMedia(newMedia);
+            if (!multiSelect) {
+              setSelectedImage([v]);
+            } else {
+              setSelectedImage([...selectedImage, v]);
+            }
           },
           onRecordingError: (error) => console.error(error),
         });
@@ -149,8 +207,7 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
   };
 
   const checkOut = () => {
-    const data = [...media, ...selectedImage];
-    getData(data);
+    getData(selectedImage);
     setIsOpen(false);
   };
 
@@ -161,6 +218,44 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
     }
   };
 
+  const onFocus = async (e: GestureResponderEvent) => {
+    try {
+      if (
+        (!frontCamera && devices?.back?.supportsFocus) ||
+        (frontCamera && devices?.front?.supportsFocus)
+      ) {
+        e.persist();
+        const event = e.nativeEvent;
+        let point: Point = {
+          x: Math.round(event.pageX - 25),
+          y: Math.round(event.pageY - 25),
+        };
+        setFocused({ x: point.x - 25, y: point.y - 25 });
+        await camera?.current?.focus(point);
+      }
+    } catch (error: any) {
+      console.log(e);
+    } finally {
+      setFocused(undefined);
+    }
+  };
+
+  const onPressItem = (obj: PhotoFile | VideoFile | PhotoIdentifier) => {
+    if (multiSelect) {
+      let selected = [...selectedImage];
+      const index = selected.indexOf(obj);
+      (index === -1 && selected.push(obj)) || selected.splice(index, 1);
+      setSelectedImage(selected);
+    } else {
+      setSelectedImage([obj]);
+    }
+  };
+
+  const onPressChangeCamera = () => {
+    setIsFrontCamera(!frontCamera);
+    setIsTorch(false);
+  };
+
   if (
     (frontCamera && devices.front == null) ||
     (!frontCamera && devices.back == null) ||
@@ -168,35 +263,38 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
   ) {
     return (
       <View style={centerStyle}>
-        <ActivityIndicator size={"large"} />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
+
+  const identifyVideo = (obj: VideoFile) =>
+    (obj.duration && <Text style={isVideoStyle}>{"▶️"}</Text>) || null;
 
   const renderHeader = () => {
     return (
       <View style={flexDirection}>
         {(media.length &&
-          media.map((obj: any, index: number) => {
+          media.map((obj: PhotoFile | VideoFile, index: number) => {
+            const isSelected = selectedImage.includes(obj);
             return (
               <Pressable
+                style={styles.center}
                 key={index}
-                onPress={() => {
-                  media.splice(index!, 1);
-                  setMedia([...media]);
-                }}
+                onPress={() => onPressItem(obj)}
               >
                 <Image
-                  onError={(e) => {
-                    console.log(e);
-                  }}
-                  source={{
-                    uri: `${obj.path}`,
-                  }}
-                  style={[imageStyle, borderWidth, { borderColor: themeColor }]}
+                  onError={(e) => console.log(e)}
+                  source={{ uri: `${obj.path}` }}
+                  style={[
+                    imageStyle,
+                    borderWidth,
+                    {
+                      borderColor: (isSelected && themeColor) || "transparent",
+                    },
+                  ]}
                 />
-                {(obj?.duration && <Text style={isVideoStyle}>{"▶️"}</Text>) ||
-                  null}
+                {identifyVideo(obj as VideoFile)}
               </Pressable>
             );
           })) ||
@@ -205,54 +303,24 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
     );
   };
 
-  interface MediaProps {
-    index?: number;
-    item: PhotoIdentifier;
-  }
-
-  const Media = (MediaProps: MediaProps) => {
-    const { item, index } = MediaProps;
-    const isVideo = item.node.type.split("/")?.[0] === "video";
-    return (
-      <Pressable
-        onPress={() => {
-          if (index! >= 0) {
-            selectedImage.splice(index!, 1);
-            setSelectedImage([...selectedImage]);
-          } else {
-            setSelectedImage([...selectedImage, item]);
-          }
-        }}
-      >
-        <Image
-          source={{ uri: item.node.image.uri }}
-          style={[
-            imageStyle,
-            {
-              borderWidth: (index! >= 0 && 1) || 0,
-              borderColor: themeColor,
-            },
-          ]}
-        />
-        {(isVideo && <Text style={isVideoStyle}>{"▶️"}</Text>) || null}
-      </Pressable>
-    );
-  };
+  const focusedView = () =>
+    focused && <View style={[focus, { top: focused.y, left: focused.x }]} />;
 
   return (
     <>
       <Camera
+        {...cameraProps}
         ref={camera}
         onError={(error) => console.log(error)}
         style={StyleSheet.absoluteFill}
-        device={frontCamera ? devices.front : devices.back}
-        isActive={true}
-        video={true}
-        focusable={true}
-        audio={true}
-        zoom={zoom}
-        torch={isTorch ? "on" : "off"}
-        enableZoomGesture={true}
+        device={frontCamera ? devices.front! : devices.back!}
+        onTouchEnd={(e) => devices?.back?.supportsFocus && onFocus(e)}
+        isActive
+        photo
+        video
+        focusable
+        audio
+        enableZoomGesture
       />
       <Pressable
         style={closeButtonStyle}
@@ -266,35 +334,42 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
         <FlatList
           showsHorizontalScrollIndicator={false}
           data={photos?.edges}
-          horizontal={true}
+          horizontal
           ListHeaderComponent={renderHeader}
           renderItem={({ item }: { item: PhotoIdentifier }) => {
-            const index = selectedImage.findIndex(
-              (data) => data.node.image.uri === item.node.image.uri
+            const selectedImages = selectedImage as PhotoIdentifier[];
+            const index = selectedImages.indexOf(item);
+            return (
+              <Media
+                index={index}
+                item={item}
+                onPressItem={onPressItem}
+                themeColor={themeColor!}
+              />
             );
-            return <Media index={index} item={item} />;
           }}
           keyExtractor={(item) => item.node.image.uri}
           onEndReached={getMorePhotos}
         />
-        {((media.length || selectedImage.length) && (
+        {(selectedImage.length && (
           <Pressable
             style={[checkButtonStyle, { backgroundColor: themeColor }]}
             onPress={checkOut}
           >
-            <Text>{`${media.length + selectedImage.length} ✔️`}</Text>
+            <Text style={[{ color: secondaryColor }, styles.selectedLength]}>
+              {selectedImage.length}
+            </Text>
+            <Text style={[{ color: secondaryColor }, styles.tick]}>{" ✓"}</Text>
           </Pressable>
         )) ||
           null}
         <View style={bottomInner}>
           <Pressable
-            onPress={() => {
-              setIsTorch(!isTorch);
-            }}
+            onPress={() => setIsTorch((prev) => !prev)}
             disabled={frontCamera}
             style={[
               flashStyle,
-              { backgroundColor: (isTorch && "white") || "transparent" },
+              { backgroundColor: (isTorch && white) || "transparent" },
             ]}
           >
             <Text style={[flashTextStyle, fontSize]}>{"⚡"}</Text>
@@ -307,17 +382,13 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
           >
             <View style={(video && videoStyle) || {}} />
           </Pressable>
-          <Pressable
-            onPress={() => {
-              setIsFrontCamera(!frontCamera);
-              setIsTorch(false);
-            }}
-          >
+          <Pressable onPress={onPressChangeCamera}>
             <Text style={fontSize}>{"🔄"}</Text>
           </Pressable>
         </View>
-        <Text style={bottomText}>{"Hold for video,tap for photo "}</Text>
+        <Text style={bottomText}>{"Hold for video, tap for photo"}</Text>
       </View>
+      {focusedView()}
     </>
   );
 };
@@ -369,11 +440,13 @@ const styles = StyleSheet.create({
     fontSize: 25,
   },
   flashStyle: {
-    borderColor: "white",
+    borderColor: white,
     height: 40,
     width: 40,
     borderRadius: 20,
     borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkButtonStyle: {
     width: 50,
@@ -384,11 +457,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     top: -20,
+    flexDirection: "row",
   },
   isVideoStyle: {
     position: "absolute",
     alignSelf: "center",
-    top: 20,
+    // top: 20,
     fontSize: 25,
   },
   flexDirection: { flexDirection: "row" },
@@ -402,6 +476,21 @@ const styles = StyleSheet.create({
     top: 50,
     position: "absolute",
     left: 50,
+  },
+  focus: {
+    position: "absolute",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: white,
+  },
+  center: { justifyContent: "center", alignItems: "center" },
+  tick: {
+    fontSize: 20,
+  },
+  selectedLength: {
+    fontSize: 17,
   },
 });
 
