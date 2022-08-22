@@ -7,9 +7,9 @@
 <hr>
 
 - High quality camera support in Android and iOS
-- Select multiple images and videos from phone storage
+- Select images and videos from phone storage with an option of mulitiple selection
 - Capture images and videos using awesome camera
-- Flash and camera zoom feature also available
+- Flash, manual focus and camera zoom features available
 - Customize theme color
 
 <br>
@@ -100,12 +100,16 @@ you can refer this links for fixing [React-bridging wrong paths](https://github.
 
 **Props:**
 
-| Name       | Type     | Required | Description                          |
-| ---------- | -------- | -------- | ------------------------------------ |
-| setIsOpen  | Function | Yes      | Close awesome camera screen          |
-| getData    | Function | Yes      | Return selected or captured media    |
-| zoom       | number   | No       | Camera zoom level, default 1         |
-| themeColor | string   | No       | Custom theme color, default 'yellow' |
+| Name                | Type                | Required | Description                                                                              | Default   |
+| ------------------- | ------------------- | -------- | ---------------------------------------------------------------------------------------- | --------- |
+| setIsOpen           | Function            | Yes      | Close awesome camera screen                                                              | -         |
+| getData             | Function            | Yes      | Return selected or captured media                                                        | -         |
+| multiSelect         | boolean             | No       | Option to select multiple files (image or video)                                         | true      |
+| themeColor          | string              | No       | Custom theme color                                                                       | 'yellow'  |
+| secondaryColor      | string              | No       | Custom secondary color                                                                   | 'black'   |
+| takePhotoOptions    | TakePhotoOptions    | No       | Extends react-native-vision-camera's TakePhotoOptions interface while capturing a photo  | -         |
+| recordVideoOptions  | RecordVideoOptions  | No       | Extends react-native-vision-camera's RecordVideoOptions interface when recording starts  | -         |
+| cameraProps         | CameraProps         | No       | Extends react-native-vision-camera's CameraProps interface                               | -         |
 
 <br>
 
