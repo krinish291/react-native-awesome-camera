@@ -169,7 +169,7 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
     if (showGallery) {
       const items = await CameraRoll.getPhotos({
         first: 20,
-        assetType: 'All',
+        assetType: (photo && video && 'All') || (video && 'Videos') || 'Photos',
       });
       setPhotos(items);
     }

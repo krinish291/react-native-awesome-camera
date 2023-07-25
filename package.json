@@ -23,7 +23,6 @@
     "react-native-permissions": "^3.8.4",
     "react-native-vision-camera": "^2.13.3"
   },
-  "reactNativePermissionsIOS": [],
   "author": "radadiyakrinish1999@gmail.com",
   "devDependencies": {
     "@types/react-native": "^0.69.1",
