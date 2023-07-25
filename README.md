@@ -41,7 +41,7 @@ install dependencies
 yarn add react-native-permissions
 yarn add react-native-vision-camera
 yarn add fbjs
-yarn add git+https://github.com/BohdanSol/react-native-cameraroll.git
+yarn add @react-native-camera-roll/camera-roll@5.6.0
 ```
 
 we are using **react-native-vision-camera**
@@ -59,6 +59,8 @@ Add below permission in your **AndroidManifest.xml**
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   ....
 </manifest>
@@ -109,8 +111,7 @@ you can refer this links for fixing [React-bridging wrong paths](https://github.
 | secondaryColor      | string              | No       | Custom secondary color                                                                   | 'black'   |
 | takePhotoOptions    | TakePhotoOptions    | No       | Extends react-native-vision-camera's TakePhotoOptions interface while capturing a photo  | -         |
 | recordVideoOptions  | RecordVideoOptions  | No       | Extends react-native-vision-camera's RecordVideoOptions interface when recording starts  | -         |
-| cameraProps         | CameraProps         | No       | Extends react-native-vision-camera's CameraProps interface                               | -         |
-
+| cameraProps         | CameraProps         | No       | Extends react-native-vision-camera's CameraProps interface                               | -         | 
 <br>
 
 ## Example
