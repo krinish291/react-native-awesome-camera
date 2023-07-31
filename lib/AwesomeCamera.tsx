@@ -152,7 +152,16 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
   const [media, setMedia] = useState<(PhotoFile | VideoFile)[]>([]);
   const [focused, setFocused] = useState<Point>();
   const [frontCamera, setIsFrontCamera] = useState(false);
-  const [isPhotos, setIsPhotos] = useState<boolean>(true);
+
+  const getIsPhotos = () => {
+    let  isPhoto = true;
+    if (photo && video) isPhoto = true;
+    else if (video) isPhoto = false;
+    else if (photo) isPhoto = true;
+    return isPhoto;
+  }
+
+  const [isPhotos, setIsPhotos] = useState<boolean>(getIsPhotos());
 
   const devices = useCameraDevices();
   const camera = useRef<Camera>(null);
@@ -533,7 +542,7 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
           </Pressable>
         </View>
 
-        <View>{getBottomView()}</View>
+        <View>{photo && video && getBottomView() || null}</View>
       </View>
 
       {focusedView()}
