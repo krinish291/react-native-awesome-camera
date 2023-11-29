@@ -1,6 +1,6 @@
 {
   "name": "react-native-awesome-camera",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A React Native package that allows you to select a photo/video from the device library or camera.",
   "main": "dist/index.js",
   "scripts": {
