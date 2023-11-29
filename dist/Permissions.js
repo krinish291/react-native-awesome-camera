@@ -47,6 +47,36 @@ export const getStorageOrLibraryPermission = () => __awaiter(void 0, void 0, voi
     }
     return getBooleanForPermission(permission);
 });
+export const getPhotoPermission = () => __awaiter(void 0, void 0, void 0, function* () {
+    let permission;
+    if (!isIOS) {
+        if (Number(Platform.Version) >= 30) {
+            permission = yield checkForPermission(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
+        }
+        else {
+            permission = yield checkForPermission(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+        }
+    }
+    else {
+        permission = yield checkForPermission(PERMISSIONS.IOS.CAMERA);
+    }
+    return getBooleanForPermission(permission);
+});
+export const getVideoPermission = () => __awaiter(void 0, void 0, void 0, function* () {
+    let permission;
+    if (!isIOS) {
+        if (Number(Platform.Version) >= 30) {
+            permission = yield checkForPermission(PERMISSIONS.ANDROID.READ_MEDIA_VIDEO);
+        }
+        else {
+            permission = yield checkForPermission(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+        }
+    }
+    else {
+        permission = yield checkForPermission(PERMISSIONS.IOS.CAMERA);
+    }
+    return getBooleanForPermission(permission);
+});
 export const getMicrophonePermission = () => __awaiter(void 0, void 0, void 0, function* () {
     let permission;
     if (!isIOS) {
