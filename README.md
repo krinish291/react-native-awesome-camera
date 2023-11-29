@@ -41,11 +41,21 @@ install dependencies
 yarn add react-native-permissions
 yarn add react-native-vision-camera
 yarn add fbjs
-yarn add git+https://github.com/BohdanSol/react-native-cameraroll.git
+yarn add @react-native-camera-roll/camera-roll@5.6.0
 ```
 
 we are using **react-native-vision-camera**
 <br><br>
+
+add "reactNativePermissionsIOS": [] in package.json root object.
+
+add the following line in postinstall script
+
+```
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    npx react-native setup-ios-permissions
+fi
+```
 
 ### Android Changes
 
@@ -59,6 +69,8 @@ Add below permission in your **AndroidManifest.xml**
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   ....
 </manifest>
@@ -100,16 +112,35 @@ you can refer this links for fixing [React-bridging wrong paths](https://github.
 
 **Props:**
 
-| Name                | Type                | Required | Description                                                                              | Default   |
-| ------------------- | ------------------- | -------- | ---------------------------------------------------------------------------------------- | --------- |
-| setIsOpen           | Function            | Yes      | Close awesome camera screen                                                              | -         |
-| getData             | Function            | Yes      | Return selected or captured media                                                        | -         |
-| multiSelect         | boolean             | No       | Option to select multiple files (image or video)                                         | true      |
-| themeColor          | string              | No       | Custom theme color                                                                       | 'yellow'  |
-| secondaryColor      | string              | No       | Custom secondary color                                                                   | 'black'   |
-| takePhotoOptions    | TakePhotoOptions    | No       | Extends react-native-vision-camera's TakePhotoOptions interface while capturing a photo  | -         |
-| recordVideoOptions  | RecordVideoOptions  | No       | Extends react-native-vision-camera's RecordVideoOptions interface when recording starts  | -         |
-| cameraProps         | CameraProps         | No       | Extends react-native-vision-camera's CameraProps interface                               | -         |
+| Name                        | Type                  | Required | Description                                                                              | Default   |
+| -------------------         | -------------------   | -------- | ---------------------------------------------------------------------------------------- | --------- |
+| setIsOpen                   | Function              | Yes      | Close awesome camera screen                                                              | -         |
+| getData                     | Function              | Yes      | Return selected or captured media                                                        | -         |
+| multiSelect                 | boolean               | No       | Option to select multiple files (image or video)                                         | true      |
+| themeColor                  | string                | No       | Custom theme color                                                                       | 'yellow'  |
+| secondaryColor              | string                | No       | Custom secondary color                                                                   | 'black'   |
+| takePhotoOptions            | TakePhotoOptions      | No       | Extends react-native-vision-camera's TakePhotoOptions interface while capturing a photo  | -         |
+| recordVideoOptions          | RecordVideoOptions    | No       | Extends react-native-vision-camera's RecordVideoOptions interface when recording starts  | -         |
+| cameraProps                 | CameraProps           | No       | Extends react-native-vision-camera's CameraProps interface                               | -         | 
+| showGallery                 | boolean               | No       | For showing images available on device                                                   | true      |
+| photo                       | boolean               | No       | For allowing photo capture                                                               | true      |
+| video                       | boolean               | No       | For allowing video capture                                                               | true      |
+| closeContainerStyle         | ViewStyle             | No       | For styling close icon container                                                         | -         |
+| closeIconStyle              | ImageStyle            | No       | For styling close icon                                                                   | -         |
+| closeIcon                   | ImageSourcePropType   | No       | For providing custom close image resource                                                | -         |
+| renderCloseComponent        | ReactComponentElement | No       | For rendering custom close component                                                     | -         |
+| videoContainerStyle         | ViewStyle             | No       | For styling video icon container                                                         | -         |
+| videoIconStyle              | ImageStyle            | No       | For styling video icon                                                                   | -         |
+| videoIcon                   | ImageSourcePropType   | No       | For providing custom video image resource                                                | -         |
+| renderVideoComponent        | ReactComponentElement | No       | For rendering custom video component                                                     | -         |
+| flashContainerStyle         | ViewStyle             | No       | For styling flash icon container                                                         | -         |
+| flashIconStyle              | ImageStyle            | No       | For styling flash icon                                                                   | -         |
+| flashIcon                   | ImageSourcePropType   | No       | For providing custom flash image resource                                                | -         |
+| renderFlashComponent        | ReactComponentElement | No       | For rendering custom flash component                                                     | -         |
+| changeCameraContainerStyle  | ViewStyle             | No       | For styling change camera icon container                                                 | -         |
+| changeCameraIconStyle       | ImageStyle            | No       | For styling change camera icon                                                           | -         |
+| changeCameraIcon            | ImageSourcePropType   | No       | For providing custom change camera image resource                                        | -         |
+| renderChangeCameraComponent | ReactComponentElement | No       | For rendering custom change camera component                                             | -         |
 
 <br>
 

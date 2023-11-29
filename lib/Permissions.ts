@@ -1,12 +1,13 @@
 import {Platform} from 'react-native';
 import {
   check,
-  AndroidPermission,
   RESULTS,
   request,
+  PermissionStatus,
+  Permission,
   PERMISSIONS,
   IOSPermission,
-  PermissionStatus,
+  AndroidPermission,
 } from 'react-native-permissions';
 
 export const isIOS = Platform.OS === 'ios';
@@ -26,9 +27,8 @@ export const checkForPermission = async (
   }
 };
 
-export const requestForPermission = async (
-  permissionOf: AndroidPermission | IOSPermission,
-) => await request(permissionOf);
+export const requestForPermission = async (permissionOf: Permission) =>
+  await request(permissionOf);
 
 export const getBooleanForPermission = (permissionStatus: PermissionStatus) => {
   if (!isIOS) {
@@ -54,6 +54,42 @@ export const getStorageOrLibraryPermission = async () => {
     );
   } else {
     permission = await checkForPermission(PERMISSIONS.IOS.PHOTO_LIBRARY);
+  }
+  return getBooleanForPermission(permission);
+};
+
+export const getPhotoPermission = async () => {
+  let permission: PermissionStatus;
+  if (!isIOS) {
+    if (Number(Platform.Version) >= 30) {
+      permission = await checkForPermission(
+        PERMISSIONS.ANDROID.READ_MEDIA_IMAGES,
+      );
+    } else {
+      permission = await checkForPermission(
+        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+      );
+    }
+  } else {
+    permission = await checkForPermission(PERMISSIONS.IOS.CAMERA);
+  }
+  return getBooleanForPermission(permission);
+};
+
+export const getVideoPermission = async () => {
+  let permission: PermissionStatus;
+  if (!isIOS) {
+    if (Number(Platform.Version) >= 30) {
+      permission = await checkForPermission(
+        PERMISSIONS.ANDROID.READ_MEDIA_VIDEO,
+      );
+    } else {
+      permission = await checkForPermission(
+        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+      );
+    }
+  } else {
+    permission = await checkForPermission(PERMISSIONS.IOS.CAMERA);
   }
   return getBooleanForPermission(permission);
 };

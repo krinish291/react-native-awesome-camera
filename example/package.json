@@ -10,12 +10,13 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
-    "@react-native-community/cameraroll": "git+https://github.com/BohdanSol/react-native-cameraroll.git",
+    "@react-native-camera-roll/camera-roll": "^5.6.0",
     "fbjs": "^3.0.4",
     "react": "18.0.0",
     "react-native": "0.69.1",
     "react-native-awesome-camera": "^1.0.7",
-    "react-native-permissions": "^3.4.0",
+    "react-native-gesture-handler": "^2.12.0",
+    "react-native-permissions": "^3.8.4",
     "react-native-vision-camera": "^2.13.5"
   },
   "devDependencies": {
