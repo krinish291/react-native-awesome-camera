@@ -17,11 +17,11 @@
   "license": "MIT",
   "typings": "dist/index.d.ts",
   "dependencies": {
-    "@react-native-camera-roll/camera-roll": "5.6.0",
+    "@react-native-camera-roll/camera-roll": "7.1.0",
     "fbjs": "^3.0.4",
-    "react-native-gesture-handler": "^2.12.0",
-    "react-native-permissions": "^3.8.4",
-    "react-native-vision-camera": "^2.13.3"
+    "react-native-gesture-handler": "^2.14.0",
+    "react-native-permissions": "^3.10.1",
+    "react-native-vision-camera": "^2.16.5"
   },
   "author": "radadiyakrinish1999@gmail.com",
   "devDependencies": {
@@ -46,3 +46,4 @@
     "picker"
   ]
 }
+
