@@ -1,29 +1,23 @@
 {
-    "compilerOptions": {
-      "declaration": true,
-      "suppressImplicitAnyIndexErrors": true,
-      "target": "es2015",
-      "module": "es2015",
-      "outDir": "dist",
-      "sourceMap": true,
-      "experimentalDecorators": true,
-      "jsx": "react-native",
-      "lib": ["dom", "es2015", "es2016"],
-      "allowSyntheticDefaultImports": true,
-      "moduleResolution": "node",
-      "noEmitHelpers": false,
-      "importHelpers": false,
-      "strict": true,
-      "noImplicitReturns": true,
-      "skipLibCheck": true
-    },
-    "files": [
-      "lib/index.ts"
-    ],
-    "exclude": [
-      "build",
-      "dist",
-      "node_modules"
-    ]
-  }
-  
+  "compilerOptions": {
+    "declaration": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es2015",
+    "module": "es2015",
+    "outDir": "dist",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "jsx": "react-native",
+    "lib": ["dom", "es2015", "es2016"],
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "noEmitHelpers": false,
+    "importHelpers": false,
+    "strict": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "ignoreDeprecations": "5.0"
+  },
+  "files": ["lib/index.ts"],
+  "exclude": ["build", "dist", "node_modules"]
+}

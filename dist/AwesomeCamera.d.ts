@@ -5,8 +5,8 @@ import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
 interface CameraProps extends Omit<VisionCameraProps, 'device' | 'isActive' | 'photo' | 'video' | 'audio'> {
     isActive?: boolean;
 }
-declare type RecordVideoOptions = Pick<VisionRecordVideoOptions, 'flash'>;
-declare type TakePhotoOptions = Omit<VisionTakePhotoOptions, 'flash'>;
+type RecordVideoOptions = Pick<VisionRecordVideoOptions, 'flash'>;
+type TakePhotoOptions = Omit<VisionTakePhotoOptions, 'flash'>;
 interface AwesomeCameraProps {
     setIsOpen: Function;
     getData: (data: (PhotoIdentifier | PhotoFile | VideoFile)[]) => void;
