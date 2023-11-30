@@ -149,7 +149,7 @@ if you are facing any permission-related issues, you can refer to [react-native-
 
 you can refer these links for fixing [React-bridging wrong paths](https://github.com/facebook/react-native/issues/34102), [Added correct namespace qualifier to .mm file](https://github.com/Shopify/react-native-skia/pull/629/files)
 
-[**Props:**](#Props)
+## Props:
 
 | Name                        | Type                  | Required | Description                                                                             | Default  |
 | --------------------------- | --------------------- | -------- | --------------------------------------------------------------------------------------- | -------- |
