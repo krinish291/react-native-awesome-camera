@@ -21,7 +21,7 @@
     "fbjs": "^3.0.4",
     "react-native-gesture-handler": "^2.14.0",
     "react-native-permissions": "^3.10.1",
-    "react-native-vision-camera": "^2.16.5"
+    "react-native-vision-camera": "^3.6.12"
   },
   "author": "radadiyakrinish1999@gmail.com",
   "devDependencies": {
