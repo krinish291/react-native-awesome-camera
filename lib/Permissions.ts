@@ -1,4 +1,4 @@
-import {Platform} from 'react-native';
+import { Platform } from "react-native";
 import {
   check,
   RESULTS,
@@ -8,12 +8,12 @@ import {
   PERMISSIONS,
   IOSPermission,
   AndroidPermission,
-} from 'react-native-permissions';
+} from "react-native-permissions";
 
-export const isIOS = Platform.OS === 'ios';
+export const isIOS = Platform.OS === "ios";
 
 export const checkForPermission = async (
-  permissionOf: AndroidPermission | IOSPermission,
+  permissionOf: AndroidPermission | IOSPermission
 ) => {
   const response = await check(permissionOf);
   switch (response) {
@@ -50,7 +50,7 @@ export const getStorageOrLibraryPermission = async () => {
   let permission: PermissionStatus;
   if (!isIOS) {
     permission = await checkForPermission(
-      PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+      PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
     );
   } else {
     permission = await checkForPermission(PERMISSIONS.IOS.PHOTO_LIBRARY);
@@ -63,11 +63,11 @@ export const getPhotoPermission = async () => {
   if (!isIOS) {
     if (Number(Platform.Version) >= 30) {
       permission = await checkForPermission(
-        PERMISSIONS.ANDROID.READ_MEDIA_IMAGES,
+        PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
       );
     } else {
       permission = await checkForPermission(
-        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
       );
     }
   } else {
@@ -81,11 +81,11 @@ export const getVideoPermission = async () => {
   if (!isIOS) {
     if (Number(Platform.Version) >= 30) {
       permission = await checkForPermission(
-        PERMISSIONS.ANDROID.READ_MEDIA_VIDEO,
+        PERMISSIONS.ANDROID.READ_MEDIA_VIDEO
       );
     } else {
       permission = await checkForPermission(
-        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+        PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
       );
     }
   } else {
@@ -114,14 +114,3 @@ export const getCameraPermission = async () => {
   return getBooleanForPermission(permission);
 };
 
-export const getLocationPermission = async () => {
-  let permission: PermissionStatus;
-  if (!isIOS) {
-    permission = await checkForPermission(
-      PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
-    );
-  } else {
-    permission = await checkForPermission(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-  }
-  return getBooleanForPermission(permission);
-};
