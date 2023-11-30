@@ -6,17 +6,17 @@
 
 <hr>
 
-- High quality camera support in Android and iOS
-- Select images and videos from phone storage with an option of mulitiple selection
-- Capture images and videos using awesome camera
-- Flash, manual focus and camera zoom features available
+- High-quality camera support in Android and iOS
+- Select images and videos from phone storage with an option of multiple selection
+- Capture images and videos using the awesome camera
+- Flash, manual focus, and camera zoom features available
 - Customize theme color
 
 <br>
 <p align="center">
-  <img alt="Image Capture" src="https://iili.io/jrQlqv.jpg" width="45%">
+  <img alt="Image Capture" src="https://iili.io/JxQ2dhl.jpg" width="45%">
 &nbsp; &nbsp; &nbsp; &nbsp;
-  <img alt="Video Capture" src="https://iili.io/jrQaLJ.jpg" width="45%">
+  <img alt="Video Capture" src="https://iili.io/JxQJtHb.jpg" width="45%">
 </p>
 
 <br>
@@ -145,9 +145,9 @@ Also change your **Info.plist**
 </dict>
 ```
 
-if you are facing any permission related issues, you can refer [react-native-permissions/issues](https://github.com/zoontek/react-native-permissions/issues)
+if you are facing any permission-related issues, you can refer to [react-native-permissions/issues](https://github.com/zoontek/react-native-permissions/issues)
 
-you can refer this links for fixing [React-bridging wrong paths](https://github.com/facebook/react-native/issues/34102), [Added correct namespace qualifier to .mm file](https://github.com/Shopify/react-native-skia/pull/629/files)
+you can refer these links for fixing [React-bridging wrong paths](https://github.com/facebook/react-native/issues/34102), [Added correct namespace qualifier to .mm file](https://github.com/Shopify/react-native-skia/pull/629/files)
 
 **Props:**
 
