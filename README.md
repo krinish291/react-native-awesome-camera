@@ -38,10 +38,7 @@ npm i react-native-awesome-camera
 install dependencies
 
 ```
-yarn add react-native-permissions
-yarn add react-native-vision-camera
-yarn add @react-native-camera-roll/camera-roll
-yarn add react-native-gesture-handler
+yarn add react-native-permissions react-native-vision-camera @react-native-camera-roll/camera-roll react-native-gesture-handler
 ```
 
 we are using **react-native-vision-camera**
