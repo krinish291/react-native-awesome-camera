@@ -1,7 +1,7 @@
-import React from 'react';
-import { ImageSourcePropType, ImageStyle, StyleProp, ViewStyle } from 'react-native';
-import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
-import { PhotoFile, VideoFile } from 'react-native-vision-camera';
+import React from "react";
+import { ImageSourcePropType, ImageStyle, StyleProp, ViewStyle } from "react-native";
+import { PhotoIdentifier } from "@react-native-camera-roll/camera-roll";
+import { PhotoFile, VideoFile } from "react-native-vision-camera";
 interface MediaProps {
     index?: number;
     item: PhotoIdentifier;

@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { Platform } from 'react-native';
-import { check, RESULTS, request, PERMISSIONS, } from 'react-native-permissions';
-export const isIOS = Platform.OS === 'ios';
+import { Platform } from "react-native";
+import { check, RESULTS, request, PERMISSIONS, } from "react-native-permissions";
+export const isIOS = Platform.OS === "ios";
 export const checkForPermission = (permissionOf) => __awaiter(void 0, void 0, void 0, function* () {
     const response = yield check(permissionOf);
     switch (response) {
@@ -94,16 +94,6 @@ export const getCameraPermission = () => __awaiter(void 0, void 0, void 0, funct
     }
     else {
         permission = yield checkForPermission(PERMISSIONS.IOS.CAMERA);
-    }
-    return getBooleanForPermission(permission);
-});
-export const getLocationPermission = () => __awaiter(void 0, void 0, void 0, function* () {
-    let permission;
-    if (!isIOS) {
-        permission = yield checkForPermission(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-    }
-    else {
-        permission = yield checkForPermission(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
     }
     return getBooleanForPermission(permission);
 });

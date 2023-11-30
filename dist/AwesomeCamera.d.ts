@@ -1,12 +1,12 @@
-import React from "react";
-import { StyleProp, ViewStyle, ImageStyle, ImageSourcePropType } from "react-native";
-import { CameraProps as VisionCameraProps, PhotoFile, RecordVideoOptions as VisionRecordVideoOptions, TakePhotoOptions as VisionTakePhotoOptions, VideoFile } from "react-native-vision-camera";
-import { PhotoIdentifier } from "@react-native-camera-roll/camera-roll";
-interface CameraProps extends Omit<VisionCameraProps, "device" | "isActive" | "photo" | "video" | "audio"> {
+import React from 'react';
+import { StyleProp, ViewStyle, ImageStyle, ImageSourcePropType } from 'react-native';
+import { CameraProps as VisionCameraProps, PhotoFile, RecordVideoOptions as VisionRecordVideoOptions, TakePhotoOptions as VisionTakePhotoOptions, VideoFile } from 'react-native-vision-camera';
+import { PhotoIdentifier } from '@react-native-camera-roll/camera-roll';
+interface CameraProps extends Omit<VisionCameraProps, 'device' | 'isActive' | 'photo' | 'video' | 'audio'> {
     isActive?: boolean;
 }
-type RecordVideoOptions = Pick<VisionRecordVideoOptions, "flash">;
-type TakePhotoOptions = Omit<VisionTakePhotoOptions, "flash">;
+type RecordVideoOptions = Pick<VisionRecordVideoOptions, 'flash'>;
+type TakePhotoOptions = Omit<VisionTakePhotoOptions, 'flash'>;
 interface AwesomeCameraProps {
     setIsOpen: Function;
     getData: (data: (PhotoIdentifier | PhotoFile | VideoFile)[]) => void;
