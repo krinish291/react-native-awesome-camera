@@ -1,4 +1,4 @@
-import { PermissionStatus, Permission, IOSPermission, AndroidPermission } from 'react-native-permissions';
+import { PermissionStatus, Permission, IOSPermission, AndroidPermission } from "react-native-permissions";
 export declare const isIOS: boolean;
 export declare const checkForPermission: (permissionOf: AndroidPermission | IOSPermission) => Promise<PermissionStatus>;
 export declare const requestForPermission: (permissionOf: Permission) => Promise<PermissionStatus>;
@@ -8,4 +8,3 @@ export declare const getPhotoPermission: () => Promise<boolean>;
 export declare const getVideoPermission: () => Promise<boolean>;
 export declare const getMicrophonePermission: () => Promise<boolean>;
 export declare const getCameraPermission: () => Promise<boolean>;
-export declare const getLocationPermission: () => Promise<boolean>;
