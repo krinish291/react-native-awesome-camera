@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   View,
@@ -14,6 +13,8 @@ import {
   ViewStyle,
   ImageStyle,
   ImageSourcePropType,
+  Alert,
+  Linking,
 } from "react-native";
 import {
   Camera,
@@ -131,7 +132,6 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
     isVideoStyle,
     flexDirection,
     borderWidth,
-    centerStyle,
     closeButtonStyle,
     focus,
   } = styles;
@@ -176,12 +176,6 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
 
   useEffect(() => {
     managePermissions();
-    if (!hasCameraPermission) {
-      requestCameraPermission();
-    }
-    if (!hasMicrophonePermission) {
-      requestMicrophonePermission();
-    }
   }, [hasCameraPermission, hasMicrophonePermission]);
 
   useEffect(() => {
@@ -189,6 +183,14 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
       getPhotosDetails();
     }
   }, [hasStoragePermission]);
+
+  useEffect(() => {
+    if (frontCameraDevice === undefined || backCameraDevice === undefined) {
+      Alert.alert("No Camera Found.", "Please check your device.", [
+        { text: "OK", onPress: () => setIsOpen(false) },
+      ]);
+    }
+  }, [frontCameraDevice, backCameraDevice]);
 
   const getPhotosDetails = async () => {
     if (showGallery) {
@@ -213,6 +215,72 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
         setHasStoragePermission(
           isStoragePermission || (photoPermission && videoPermission)
         );
+        if (isStoragePermission || (photoPermission && videoPermission)) {
+          Alert.alert(
+            "No Storage Permission Found.",
+            "Please provide storage permission to select images from gallery.",
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  Linking.openSettings();
+                },
+              },
+              {
+                text: "Cancel",
+                onPress: () => {
+                  setIsOpen(false);
+                },
+              },
+            ]
+          );
+        }
+      }
+      if (!hasMicrophonePermission && video) {
+        await requestMicrophonePermission();
+        if (!hasMicrophonePermission) {
+          Alert.alert(
+            "No Microphone Permission Found.",
+            "Please provide microphone permission to use camera.",
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  Linking.openSettings();
+                },
+              },
+              {
+                text: "Cancel",
+                onPress: () => {
+                  setIsOpen(false);
+                },
+              },
+            ]
+          );
+        }
+      }
+      if (!hasCameraPermission) {
+        await requestCameraPermission();
+        if (!hasCameraPermission) {
+          Alert.alert(
+            "No Camera Permission Found.",
+            "Please provide camera permission to use camera.",
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  Linking.openSettings();
+                },
+              },
+              {
+                text: "Cancel",
+                onPress: () => {
+                  setIsOpen(false);
+                },
+              },
+            ]
+          );
+        }
       }
     } catch (error) {
       console.log(error);
@@ -224,7 +292,8 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
       if (photos?.page_info.has_next_page && showGallery) {
         const items = await CameraRoll.getPhotos({
           first: 20,
-          assetType: "All",
+          assetType:
+            (photo && video && "All") || (video && "Videos") || "Photos",
           after: photos?.page_info.end_cursor,
         });
         setPhotos({
@@ -340,18 +409,6 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
     setIsTorch(false);
   };
 
-  if (
-    frontCameraDevice === undefined ||
-    backCameraDevice === undefined ||
-    !hasCameraPermission
-  ) {
-    return (
-      <View style={centerStyle}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   const identifyVideo = (obj: VideoFile) => {
     if (obj.duration) {
       return (
@@ -450,21 +507,23 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
 
   return (
     <>
-      {(hasCameraPermission && (
-        <Camera
-          {...cameraProps}
-          ref={camera}
-          onError={(error) => console.log(error)}
-          style={[StyleSheet.absoluteFill, cameraProps?.style]}
-          device={frontCamera ? frontCameraDevice : backCameraDevice}
-          isActive
-          photo={photo}
-          video={video}
-          focusable
-          audio
-          enableZoomGesture
-        />
-      )) ||
+      {(hasCameraPermission &&
+        ((frontCamera && frontCameraDevice !== undefined) ||
+          backCameraDevice !== undefined) && (
+          <Camera
+            {...cameraProps}
+            ref={camera}
+            onError={(error) => console.log(error)}
+            style={[StyleSheet.absoluteFill, cameraProps?.style]}
+            device={(frontCamera && frontCameraDevice!) || backCameraDevice!}
+            isActive
+            photo={photo}
+            video={video}
+            focusable
+            audio
+            enableZoomGesture
+          />
+        )) ||
         null}
 
       {(photo && video && (
