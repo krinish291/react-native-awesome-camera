@@ -22,8 +22,10 @@ import {
   Point,
   RecordVideoOptions as VisionRecordVideoOptions,
   TakePhotoOptions as VisionTakePhotoOptions,
-  useCameraDevices,
   VideoFile,
+  useCameraPermission,
+  useMicrophonePermission,
+  useCameraDevice,
 } from "react-native-vision-camera";
 import {
   CameraRoll,
@@ -35,8 +37,6 @@ import {
   PanGestureHandler,
 } from "react-native-gesture-handler";
 import {
-  getCameraPermission,
-  getMicrophonePermission,
   getPhotoPermission,
   getStorageOrLibraryPermission,
   getVideoPermission,
@@ -140,38 +140,54 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
   const [isTorch, setIsTorch] = useState<boolean>(false);
   const [hasStoragePermission, setHasStoragePermission] =
     useState<boolean>(false);
-  const [hasCameraPermission, setHasCameraPermission] =
-    useState<boolean>(false);
-  const [hasMicrophonePermission, setHasMicrophonePermission] =
-    useState<boolean>(false);
   const [photos, setPhotos] = useState<PhotoIdentifiersPage>();
-  // eslint-disable-next-line no-spaced-func
   const [selectedImage, setSelectedImage] = useState<
     (PhotoFile | VideoFile | PhotoIdentifier)[]
   >([]);
   const [media, setMedia] = useState<(PhotoFile | VideoFile)[]>([]);
   const [focused, setFocused] = useState<Point>();
   const [frontCamera, setIsFrontCamera] = useState(false);
+  const {
+    hasPermission: hasCameraPermission,
+    requestPermission: requestCameraPermission,
+  } = useCameraPermission();
+  const {
+    hasPermission: hasMicrophonePermission,
+    requestPermission: requestMicrophonePermission,
+  } = useMicrophonePermission();
 
   const getIsPhotos = () => {
     let isPhoto = true;
-    if (photo && video) isPhoto = true;
-    else if (video) isPhoto = false;
-    else if (photo) isPhoto = true;
+    if (photo && video) {
+      isPhoto = true;
+    } else if (video) {
+      isPhoto = false;
+    } else if (photo) {
+      isPhoto = true;
+    }
     return isPhoto;
   };
 
   const [isPhotos, setIsPhotos] = useState<boolean>(getIsPhotos());
 
-  const devices = useCameraDevices();
+  const backCameraDevice = useCameraDevice("back");
+  const frontCameraDevice = useCameraDevice("front");
   const camera = useRef<Camera>(null);
 
   useEffect(() => {
     managePermissions();
-  }, []);
+    if (!hasCameraPermission) {
+      requestCameraPermission();
+    }
+    if (!hasMicrophonePermission) {
+      requestMicrophonePermission();
+    }
+  }, [hasCameraPermission, hasMicrophonePermission]);
 
   useEffect(() => {
-    if (hasStoragePermission) getPhotosDetails();
+    if (hasStoragePermission) {
+      getPhotosDetails();
+    }
   }, [hasStoragePermission]);
 
   const getPhotosDetails = async () => {
@@ -198,14 +214,6 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
           isStoragePermission || (photoPermission && videoPermission)
         );
       }
-
-      if (video) {
-        const isMicPermission = await getMicrophonePermission();
-        setHasMicrophonePermission(isMicPermission);
-      }
-
-      const isCameraPermission = await getCameraPermission();
-      setHasCameraPermission(isCameraPermission);
     } catch (error) {
       console.log(error);
     }
@@ -231,7 +239,6 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
     try {
       if (camera.current && photo) {
         const snapshot = await camera?.current.takePhoto({
-          skipMetadata: true,
           ...takePhotoOptions,
           flash: (isTorch && "on") || "off",
         });
@@ -239,8 +246,11 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
         const newMedia = [snapshot, ...media];
         setMedia(newMedia);
 
-        if (!multiSelect) setSelectedImage([snapshot]);
-        else setSelectedImage([...selectedImage, snapshot]);
+        if (!multiSelect) {
+          setSelectedImage([snapshot]);
+        } else {
+          setSelectedImage([...selectedImage, snapshot]);
+        }
       }
     } catch (e) {
       console.log(e);
@@ -249,9 +259,12 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
 
   const startRecording = () => {
     try {
-      if (!video) return;
-      if (!hasMicrophonePermission)
+      if (!video) {
+        return;
+      }
+      if (!hasMicrophonePermission) {
         throw new Error("No Microphone Permission Found.");
+      }
 
       if (camera.current) {
         setIsRecording(true);
@@ -263,8 +276,11 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
             const newMedia = [v, ...media];
             setMedia(newMedia);
 
-            if (!multiSelect) setSelectedImage([v]);
-            else setSelectedImage([...selectedImage, v]);
+            if (!multiSelect) {
+              setSelectedImage([v]);
+            } else {
+              setSelectedImage([...selectedImage, v]);
+            }
           },
 
           onRecordingError: (error) => console.error(error),
@@ -282,14 +298,16 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
 
   const stopRecording = async () => {
     setIsRecording(false);
-    if (camera.current && isRecording) await camera.current.stopRecording();
+    if (camera.current && isRecording) {
+      await camera.current.stopRecording();
+    }
   };
 
   const onFocus = async (e: GestureResponderEvent) => {
     try {
       if (
-        (!frontCamera && devices?.back?.supportsFocus) ||
-        (frontCamera && devices?.front?.supportsFocus)
+        (!frontCamera && backCameraDevice?.supportsFocus) ||
+        (frontCamera && frontCameraDevice?.supportsFocus)
       ) {
         e.persist();
         const event = e.nativeEvent;
@@ -312,7 +330,9 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
       const index = selected.indexOf(obj);
       (index === -1 && selected.push(obj)) || selected.splice(index, 1);
       setSelectedImage(selected);
-    } else setSelectedImage([obj]);
+    } else {
+      setSelectedImage([obj]);
+    }
   };
 
   const onPressChangeCamera = () => {
@@ -321,31 +341,26 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
   };
 
   if (
-    (frontCamera && devices.front == null) ||
-    (!frontCamera && devices.back == null) ||
+    frontCameraDevice === undefined ||
+    backCameraDevice === undefined ||
     !hasCameraPermission
-  )
+  ) {
     return (
       <View style={centerStyle}>
         <ActivityIndicator size="large" />
       </View>
     );
+  }
 
   const identifyVideo = (obj: VideoFile) => {
     if (obj.duration) {
       return (
         <>
           {(renderVideoComponent !== undefined && renderVideoComponent()) || (
-            <View
-              style={[
-                isVideoStyle,
-                { backgroundColor: "#ffffff90" },
-                videoContainerStyle,
-              ]}
-            >
+            <View style={[isVideoStyle, videoContainerStyle]}>
               <Image
-                source={videoIcon ?? require("../Images/video.png")}
-                style={[{ height: 20, width: 20 }, videoIconStyle]}
+                source={videoIcon ?? require("./Images/video.png")}
+                style={[styles.flashIconStyle, videoIconStyle]}
               />
             </View>
           )}
@@ -406,29 +421,28 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
 
   const getBottomView = () => {
     return (
-      <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 5 }}>
+      <View style={styles.bottomViewContainer}>
         <Pressable
           onPress={() => setIsPhotos(false)}
-          style={{
-            paddingVertical: 5,
-            paddingHorizontal: 10,
-            borderRadius: 15,
-            backgroundColor: isPhotos ? "transparent" : themeColor,
-          }}
+          style={[
+            styles.videoText,
+            {
+              backgroundColor: (isPhotos && "transparent") || themeColor,
+            },
+          ]}
         >
-          <Text style={{ color: "black" }}>{"Video"}</Text>
+          <Text style={styles.blackColor}>{"Video"}</Text>
         </Pressable>
         <Pressable
           onPress={() => setIsPhotos(true)}
-          style={{
-            paddingVertical: 5,
-            paddingHorizontal: 10,
-            marginLeft: 5,
-            borderRadius: 15,
-            backgroundColor: isPhotos ? themeColor : "transparent",
-          }}
+          style={[
+            styles.photoText,
+            {
+              backgroundColor: (isPhotos && themeColor) || "transparent",
+            },
+          ]}
         >
-          <Text style={{ color: "black" }}>{"Photo"}</Text>
+          <Text style={styles.blackColor}>{"Photo"}</Text>
         </Pressable>
       </View>
     );
@@ -441,8 +455,8 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
           {...cameraProps}
           ref={camera}
           onError={(error) => console.log(error)}
-          style={StyleSheet.absoluteFill}
-          device={frontCamera ? devices.front! : devices.back!}
+          style={[StyleSheet.absoluteFill, cameraProps?.style]}
+          device={frontCamera ? frontCameraDevice : backCameraDevice}
           isActive
           photo={photo}
           video={video}
@@ -453,21 +467,29 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
       )) ||
         null}
 
-      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-        <PanGestureHandler
-          onGestureEvent={(e) => {
-            if (isPhotos && e.nativeEvent.translationX > 0) setIsPhotos(false);
-            else if (!isPhotos && e.nativeEvent.translationX < 0) {
-              setIsPhotos(true);
-            }
-          }}
-        >
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onTouchEnd={(e) => devices?.back?.supportsFocus && onFocus(e)}
-          />
-        </PanGestureHandler>
-      </GestureHandlerRootView>
+      {(photo && video && (
+        <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+          <PanGestureHandler
+            onGestureEvent={(e) => {
+              if (isPhotos && e.nativeEvent.translationX > 0) {
+                setIsPhotos(false);
+              } else if (!isPhotos && e.nativeEvent.translationX < 0) {
+                setIsPhotos(true);
+              }
+            }}
+          >
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onTouchEnd={(e) =>
+                (frontCameraDevice?.supportsFocus ||
+                  backCameraDevice?.supportsFocus) &&
+                onFocus(e)
+              }
+            />
+          </PanGestureHandler>
+        </GestureHandlerRootView>
+      )) ||
+        null}
 
       <Pressable
         style={[closeButtonStyle, closeContainerStyle]}
@@ -475,8 +497,8 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
       >
         {(renderCloseComponent !== undefined && renderCloseComponent()) || (
           <Image
-            source={closeIcon ?? require("../Images/close.png")}
-            style={[{ height: 20, width: 20 }, closeIconStyle]}
+            source={closeIcon ?? require("./Images/close.png")}
+            style={[styles.flashIconStyle, closeIconStyle]}
           />
         )}
       </Pressable>
@@ -511,8 +533,8 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
           >
             {(renderFlashComponent !== undefined && renderFlashComponent()) || (
               <Image
-                source={flashIcon ?? require("../Images/flash.png")}
-                style={[{ height: 20, width: 20 }, flashIconStyle]}
+                source={flashIcon ?? require("./Images/flash.png")}
+                style={[styles.flashIconStyle, flashIconStyle]}
               />
             )}
           </Pressable>
@@ -541,11 +563,8 @@ const AwesomeCamera = (props: AwesomeCameraProps) => {
             {(renderChangeCameraComponent !== undefined &&
               renderChangeCameraComponent()) || (
               <Image
-                source={changeCameraIcon ?? require("../Images/swap.png")}
-                style={[
-                  { height: 20, width: 20, tintColor: "white" },
-                  changeCameraIconStyle,
-                ]}
+                source={changeCameraIcon ?? require("./Images/swap.png")}
+                style={[styles.changeCameraIconStyle, changeCameraIconStyle]}
               />
             )}
           </Pressable>
@@ -568,7 +587,9 @@ const CheckoutBtn = (props: {
   const { selectedImage, themeColor, secondaryColor, onPressCheckout } = props;
   const { checkButtonStyle, selectedLength, tick } = styles;
 
-  if (!selectedImage.length) return null;
+  if (!selectedImage.length) {
+    return null;
+  }
 
   return (
     <Pressable
@@ -650,6 +671,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     padding: 5,
     borderRadius: 20,
+    backgroundColor: "#ffffff90",
   },
   flexDirection: { flexDirection: "row" },
   borderWidth: { borderWidth: 1 },
@@ -677,6 +699,34 @@ const styles = StyleSheet.create({
   },
   selectedLength: {
     fontSize: 17,
+  },
+  changeCameraIconStyle: {
+    height: 20,
+    width: 20,
+    tintColor: "white",
+  },
+  flashIconStyle: {
+    height: 20,
+    width: 20,
+  },
+  blackColor: {
+    color: "black",
+  },
+  bottomViewContainer: {
+    flexDirection: "row",
+    alignSelf: "center",
+    marginTop: 5,
+  },
+  videoText: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+  },
+  photoText: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginLeft: 5,
+    borderRadius: 15,
   },
 });
 
